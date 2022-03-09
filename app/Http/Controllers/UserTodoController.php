@@ -30,7 +30,37 @@ class UserTodoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'title' => 'required',
+                    'status' => 'required|in:done,pending'
+                ],
+                [
+                    'status.in' => 'Invalid status, status must be one of: done,pending'
+                ]
+            );
+
+            if ($validator->fails()) {
+                return response(
+                    ['message' => array_values($validator->getMessageBag()->getMessages())],
+                    422
+                );
+            }
+
+            $new_todo = Todo::create(array_merge($validator->validated(), ['user_id' => $request->user()->id]));
+            return response(
+                [
+                    'new_todo' => $new_todo,
+                    'message' => 'Todo item added successfully'
+                ],
+                201
+            );
+        } catch (Exception $e) {
+            return response(['message' => $e->getMessage()], 400);
+        }
     }
 
     /**
