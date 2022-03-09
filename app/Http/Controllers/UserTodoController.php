@@ -18,7 +18,15 @@ class UserTodoController extends Controller
     public function index()
     {
         $todos = Todo::where('user_id', '=', request()->user()->id)
-            ->orderBy('status', 'desc');
+            ->orderBy('status', 'desc')
+            ->orderByRaw(
+                "
+                case 
+                    when status='pending' then created_at
+                    when status='done' then updated_at 
+                end desc
+                "
+            );
         return response()->json($todos->get());
     }
 
@@ -94,10 +102,7 @@ class UserTodoController extends Controller
             $validator = Validator::make(
                 $request->all(),
                 [
-                    'status' => 'required|in:done,pending'
-                ],
-                [
-                    'status.in' => 'Invalid status, status can be one of: done,pending'
+                    'title' => 'required',
                 ]
             );
 
@@ -108,7 +113,7 @@ class UserTodoController extends Controller
                 );
             }
 
-            $todo->update(['status' => $request->status]);
+            $todo->update(['title' => $request->title]);
             return response('Todo item updated successfully');
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);

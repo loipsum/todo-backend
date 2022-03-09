@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\UpdateTodoStatusController;
 use App\Http\Controllers\UserTodoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,4 +28,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', LogoutController::class)->name('logout');
 
     Route::apiResource('todos', UserTodoController::class);
+
+    Route::match(
+        ['put', 'patch'],
+        'todos-status/{todo}',
+        UpdateTodoStatusController::class
+    )->name('todo-status.update');
 });
